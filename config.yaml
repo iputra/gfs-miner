@@ -1,0 +1,5 @@
+initializer:
+  release_hours: ["00", "06", "12", "18"]
+  start_date: "2017-01-01"
+  end_date: "2023-12-31"
+  output_dir: "files/gfs"
