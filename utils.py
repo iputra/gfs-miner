@@ -124,7 +124,7 @@ def process_file(url, file_path, latitude, longitude):
            'press': press}
 
     # store data to pocketbase
-    insert_data(config["api_store"]["url"], row)
+    insert_data(config["gfs-miner"]["api_store"]["url"], row)
     
     # remove file
     remove_file(file_path)
