@@ -5,5 +5,6 @@ gfs-miner:
   latitude: -7.929304270692605
   longitude: 112.51864705407577
   output_dir: "output/"
+  celery_broker_url: "redis://localhost:6379/0"
   api_store:
     url: "https://gfs-miner.io/api/collections/gfs/records"
