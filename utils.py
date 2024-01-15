@@ -3,8 +3,14 @@ import yaml
 import requests
 import re
 import xarray
+import numpy as np
 import pandas as pd
 from datetime import timedelta
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from model.gfs import GFS
 
 def read_yaml_config(file_path):
     with open(file_path, 'r') as file:
@@ -71,7 +77,7 @@ def get_release_hour(file_path):
     match = re.search(r'\d{10}', file_path).group()
     return match
 
-def insert_data(url, data):
+def insert_data_to_api(url, data):
 
     payload = {
         "release_hour": data["release_hour"],
@@ -86,10 +92,36 @@ def insert_data(url, data):
 
     return response.json()
 
+def insert_data_to_db(uri_connection, data):
+    engine = create_engine(uri_connection)
+
+    # Create a session
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # Insert data into the table
+    record = GFS(
+        release_hour = data["release_hour"],
+        datetime = np.datetime_as_string(data["datetime"], unit='s'),
+        rain = data["rain"],
+        ws = data["ws"],
+        temp = data["temp"],
+        press = data["press"],
+    )
+
+    session.add(record)
+    session.commit()
+
+    # Close the session
+    session.close()
+    
+    return f"Success inserting data {data}"
+
 def process_file(url, file_path, latitude, longitude):
     base_path = os.path.abspath('')
     config = read_yaml_config(f"{base_path}/config.yaml")
     
+    # download grib file
     download_file(url, file_path)
     
     # check first forecast or not
@@ -117,14 +149,14 @@ def process_file(url, file_path, latitude, longitude):
     # add data to dataframe
     row = {
            'release_hour': release_hour,
-           'Datetime': valid_time, 
+           'datetime': valid_time, 
            'rain': rain, 
            'ws': ws, 
            'temp': temp, 
            'press': press}
 
-    # store data to pocketbase
-    insert_data(config["gfs-miner"]["api_store"]["url"], row)
+    # store data
+    insert_data_to_db(config["gfs-miner"]["db"]["uri_connection"], row)
     
     # remove file
     remove_file(file_path)
