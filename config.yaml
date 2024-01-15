@@ -6,5 +6,7 @@ gfs-miner:
   longitude: 112.51864705407577
   output_dir: "output/"
   celery_broker_url: "redis://localhost:6379/0"
+  db:
+    uri_connection: "mysql+pymysql://user:secret@127.0.0.1:3306/mydb?charset=utf8mb4"
   api_store:
     url: "https://gfs-miner.io/api/collections/gfs/records"
